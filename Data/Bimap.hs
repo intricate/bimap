@@ -67,6 +67,7 @@ module Data.Bimap (
     fromAList,
     fromAscPairList,
     fromAscPairListUnchecked,
+    fromSet,
     toList,
     toAscList,
     toAscListR,
@@ -93,6 +94,8 @@ import           Data.Function       (on)
 import           Data.List           (foldl', sort)
 import qualified Data.Map            as M
 import           Data.Maybe          (fromMaybe)
+import qualified Data.Set            as S
+import qualified Data.Tuple          as T
 import           Data.Typeable
 
 import           Prelude             hiding (filter, lookup, null, pred)
@@ -426,6 +429,15 @@ fromAscPairListUnchecked xs = MkBimap
     (M.fromAscList $ P.map swap  xs)
     where
     swap (x, y) = (y, x)
+
+fromSet :: (Ord a, Ord b)
+        => (a -> b) -> S.Set a -> Bimap a b
+fromSet f s
+    | P.null s = empty
+    | otherwise = MkBimap m invertedM
+  where
+    m = M.fromSet f s
+    invertedM = M.fromList (P.map T.swap (M.toList m))
 
 {-| /O(n)/.
 Convert to a list of associated pairs, with the left-hand
